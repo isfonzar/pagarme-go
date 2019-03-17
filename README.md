@@ -4,7 +4,7 @@
 
 # Pagarme-go ![Language Badge](https://img.shields.io/badge/Language-Go-blue.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/isfonzar/pagarme-go)](https://goreportcard.com/report/github.com/isfonzar/pagarme-go) ![License Badge](https://img.shields.io/badge/License-MIT-blue.svg) ![Status Badge](https://img.shields.io/badge/Status-Beta-brightgreen.svg)
 
-Implementação não-oficial da API do pagarme para Go.
+Implementação não-oficial da API do Pagar.me para Go.
 
 Você pode acessar a documentação oficial do Pagar.me acessando esse [link](https://docs.pagar.me).
 
@@ -27,7 +27,7 @@ Para atualizar o SDK, utilize `go get -u` para obter a última versão.
 
 ## Configuração
 
-Para instanciar um novo cliente, basta fazer o seguinte:
+Para instanciar um novo Client, basta fazer o seguinte:
 
 ```go
 package main
@@ -41,7 +41,7 @@ func main () {
 
 ### Definindo headers customizados
 
-1. Se necessário for é possível definir headers http customizados para todos requests. Para isso basta informá-los durante a instanciação do objeto `Client`:
+1. Se necessário, é possível definir headers http customizados para os requests. Para isso basta informá-los durante a instanciação do objeto `Client`:
 
 ```go
 package main
