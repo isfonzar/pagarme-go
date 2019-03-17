@@ -20,7 +20,8 @@ Você pode acessar a documentação oficial do Pagar.me acessando esse [link](ht
     - [Estornando uma transação com split](#estornando-uma-transação-com-split)
   - [Retornando transações](#retornando-transações)
   - [Retornando uma transação](#retornando-uma-transação)
-
+  - [Retornando recebíveis de uma transação](#retornando-recebíveis-de-uma-transação)
+  
 ## Instalação
 
 Utilize o `go get` para obter o SDK e adiciona-lo a seu GOPATH.
@@ -224,14 +225,26 @@ transaction, err := t.Refund(client)
 ```go
 t := transactions.Transaction{}
 
-transaction, err := t.GetList(client)
+transactions, err := t.GetList(client)
 ```
 
 ### Retornando uma transação
 
-```php
-<?php
-$transactions = $pagarme->transactions()->get([
-    'id' => 'ID_DA_TRANSAÇÃO' 
-]);
+```go
+t := transactions.Transaction{
+	ID: 123456,
+}
+
+transaction, err := t.Get(client)
+```
+
+
+### Retornando recebíveis de uma transação
+
+```go
+t := transactions.Transaction{
+	ID: 123456,
+}
+
+payables, err := t.ListPayables(client)
 ```

@@ -7,11 +7,16 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/isfonzar/pagarme-go/pkg/payables"
+
 	"github.com/isfonzar/pagarme-go/pkg/client"
 )
 
-const captureEndpoint = "transactions/%d/capture"
-const refundEndpoint = "transactions/%d/refund"
+const (
+	captureEndpoint  = "transactions/%d/capture"
+	refundEndpoint   = "transactions/%d/refund"
+	payablesEndpoint = "transactions/%d/payables"
+)
 
 // Transaction é o objeto que você recebe como resposta em cada etapa do processo de efetivação da transação
 type Transaction struct {
@@ -225,4 +230,29 @@ func (t *Transaction) Get(client client.Client) (*Transaction, error) {
 	}
 
 	return transaction, err
+}
+
+// ListPayables retorna um array com objetos recebíveis (payables).
+// Os recebíveis são os dados de pagamento referentes a uma transação.
+func (t *Transaction) ListPayables(client client.Client) (*payables.PayableList, error) {
+	endpoint := transactionsBaseEndpoint + "/" + strconv.Itoa(t.ID)
+
+	resp, err := client.Request(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	list := new(payables.PayableList)
+	err = json.Unmarshal(body, &list)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, err
 }
