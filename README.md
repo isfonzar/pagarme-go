@@ -18,6 +18,7 @@ Você pode acessar a documentação oficial do Pagar.me acessando esse [link](ht
   - [Estornando uma transação](#estornando-uma-transação)
     - [Estornando uma transação parcialmente](#estornando-uma-transação-parcialmente)
     - [Estornando uma transação com split](#estornando-uma-transação-com-split)
+  - [Retornando transações](#retornando-transações)
 
 ## Instalação
 
@@ -39,7 +40,7 @@ package main
 import "github.com/isfonzar/pagarme-go/pkg/client"
 
 func main () {
-    c := *client.NewClient("SUA_CHAVE_DE_API", nil)
+    client := *client.NewClient("SUA_CHAVE_DE_API", nil)
 }
 ```
 
@@ -58,7 +59,7 @@ func main () {
         "X-PagarMe-Version": "2017-08-28",
     }
 	
-    c := *client.NewClient("SUA_CHAVE_DE_API", headers)
+    client := *client.NewClient("SUA_CHAVE_DE_API", headers)
 }
 ```
 
@@ -79,7 +80,7 @@ import (
 )
 
 func main () {
-    c := *client.NewClient("SUA_CHAVE_DE_API", nil)
+    client := *client.NewClient("SUA_CHAVE_DE_API", nil)
     
     t := transactions.CreateTransaction{
         Amount:             100,
@@ -155,51 +156,29 @@ func main () {
         },
     }
 	
-    transaction, err := t.Create(c)
+    transaction, err := t.Create(client)
 }
 ```
 
 ### Capturando uma transação
 
 ```go
-package main
-
-import (
-	"github.com/isfonzar/pagarme-go/pkg/client"
-	"github.com/isfonzar/pagarme-go/pkg/transactions"
-)
-
-func main () {
-    c := *client.NewClient("SUA_CHAVE_DE_API", nil)
-    
-    t := transactions.Transaction{
-    	ID: 123456,
-        Amount: 100,
-    }
-	
-    transaction, err := t.Capture(c)
+t := transactions.Transaction{
+    ID: 123456,
+    Amount: 100,
 }
+
+transaction, err := t.Capture(client)
 ```
 
 ### Estornando uma transação
 
 ```go
-package main
-
-import (
-	"github.com/isfonzar/pagarme-go/pkg/client"
-	"github.com/isfonzar/pagarme-go/pkg/transactions"
-)
-
-func main () {
-    c := *client.NewClient("SUA_CHAVE_DE_API", nil)
-    
-    t := transactions.Transaction{
-        ID: 123456,
-    }
-	
-    transaction, err := t.Refund(c)
+t := transactions.Transaction{
+    ID: 123456,
 }
+
+transaction, err := t.Refund(client)
 ```
 
 Esta funcionalidade também funciona com estornos parciais, ou estornos com split. Por exemplo:
@@ -207,50 +186,42 @@ Esta funcionalidade também funciona com estornos parciais, ou estornos com spli
 #### Estornando uma transação parcialmente
 
 ```go
-package main
-
-import (
-	"github.com/isfonzar/pagarme-go/pkg/client"
-	"github.com/isfonzar/pagarme-go/pkg/transactions"
-)
-
-func main () {
-    c := *client.NewClient("SUA_CHAVE_DE_API", nil)
-    
-    t := transactions.Transaction{
-        ID: 123456,
-        Amount: 1000, // Valor parcial do estorno
-    }
-	
-    transaction, err := t.Refund(c)
+t := transactions.Transaction{
+    ID: 123456,
+    Amount: 1000, // Valor parcial do estorno
 }
+
+transaction, err := t.Refund(client)
 ```
 
 #### Estornando uma transação com split
 
 ```go
-package main
-
-import (
-	"github.com/isfonzar/pagarme-go/pkg/client"
-	"github.com/isfonzar/pagarme-go/pkg/transactions"
-)
-
-func main () {
-    c := *client.NewClient("SUA_CHAVE_DE_API", nil)
-    
-    t := transactions.Transaction{
-        ID: 123456,
-        Amount: 1000, // Valor parcial do estorno
-        RefundSplitRules: []transactions.RefundSplitRules{
-            {
-                ID: "sr_cj41w9m4d01ta316d02edaqav",
-                Amount: 3000,
-                RecipientID: "re_cj2wd5ul500d4946do7qtjrvk",
-            },
+t := transactions.Transaction{
+    ID: 123456,
+    Amount: 1000, // Valor parcial do estorno
+    RefundSplitRules: []transactions.RefundSplitRules{
+        {
+            ID: "sr_cj41w9m4d01ta316d02edaqav",
+            Amount: 3000,
+            RecipientID: "re_cj2wd5ul500d4946do7qtjrvk",
         },
-    }
-	
-    transaction, err := t.Refund(c)
+        {
+            ID: "sr_cj41w9m4e01tb316dl2f2veyz",
+            Amount: 3153,
+            RecipientID: "re_cj2wd5u2600fecw6eytgcbkd0",
+            ChargeProcessingFee: true,
+        },
+    },
 }
+
+transaction, err := t.Refund(client)
+```
+
+### Retornando transações
+
+```go
+t := transactions.Transaction{}
+
+transaction, err := t.GetList(client)
 ```

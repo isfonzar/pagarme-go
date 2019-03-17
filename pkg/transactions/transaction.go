@@ -115,6 +115,8 @@ type Transaction struct {
 	RefundSplitRules []RefundSplitRules `json:"split_rules,omitempty"`
 }
 
+type TransactionList []Transaction
+
 func (t *Transaction) Capture(client client.Client) (*Transaction, error) {
 	req, err := json.Marshal(&t)
 	if err != nil {
@@ -170,4 +172,32 @@ func (t *Transaction) Refund(client client.Client) (*Transaction, error) {
 	}
 
 	return transaction, err
+}
+
+// GetList retorna um slice contendo objetos de transações, ordenadas a partir da transação realizada mais recentemente.
+// @todo implement count, page, status
+func (t *Transaction) GetList(client client.Client) (*TransactionList, error) {
+	req, err := json.Marshal(&t)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Request(http.MethodGet, transactionsBaseEndpoint, req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	list := new(TransactionList)
+	err = json.Unmarshal(body, &list)
+	if err != nil {
+		return nil, err
+	}
+
+	return list, err
 }
