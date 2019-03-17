@@ -1,7 +1,5 @@
 <p align="center">
-  <a href="https://hellofresh.com">
     <img width="120" src="https://d32exi8v9av3ux.cloudfront.net/blog/gopher.jpg">
-  </a>
 </p>
 
 # Pagarme-go ![Language Badge](https://img.shields.io/badge/Language-Go-blue.svg) ![Go Report](https://goreportcard.com/badge/github.com/isfonzar/pagarme-go) ![License Badge](https://img.shields.io/badge/License-MIT-blue.svg) ![Status Badge](https://img.shields.io/badge/Status-Beta-brightgreen.svg)
