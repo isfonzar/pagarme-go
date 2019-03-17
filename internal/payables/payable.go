@@ -40,5 +40,3 @@ type Payable struct {
 	// Data da criação do objeto (ISODate)
 	DateCreated string `json:"date_created"`
 }
-
-type PayableList []Payable

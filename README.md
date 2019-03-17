@@ -2,7 +2,7 @@
     <img width="120" src="http://www.gophergala.com/assets/img/fancy_gopher_renee.jpg">
 </p>
 
-# Pagarme-go ![Language Badge](https://img.shields.io/badge/Language-Go-blue.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/isfonzar/pagarme-go)](https://goreportcard.com/report/github.com/isfonzar/pagarme-go) ![License Badge](https://img.shields.io/badge/License-MIT-blue.svg) ![Status Badge](https://img.shields.io/badge/Status-Beta-brightgreen.svg)
+# Pagarme-go ![Language Badge](https://img.shields.io/badge/Language-Go-blue.svg) ![License Badge](https://img.shields.io/badge/License-MIT-blue.svg) ![Status Badge](https://img.shields.io/badge/Status-Beta-brightgreen.svg)
 
 Implementação não-oficial da API do Pagar.me para Go.
 
@@ -21,7 +21,16 @@ Você pode acessar a documentação oficial do Pagar.me acessando esse [link](ht
   - [Retornando transações](#retornando-transações)
   - [Retornando uma transação](#retornando-uma-transação)
   - [Retornando recebíveis de uma transação](#retornando-recebíveis-de-uma-transação)
-  
+- [Recebível](#recebível)
+  - [Retornando recebíveis](#retornando-recebíveis)
+  - [Retornando um recebível](#retornando-um-recebível)
+- [Contas bancárias](#contas-bancárias)
+  - [Criando uma conta bancária](#criando-uma-conta-bancária)
+  - [Retornando uma conta bancária](#retornando-uma-conta-bancária)
+  - [Retornando contas bancárias](#retornando-contas-bancárias)
+- [Endpoints faltando](#endpoints-faltando)
+- [Contribuições](#contribuições)
+
 ## Instalação
 
 Utilize o `go get` para obter o SDK e adiciona-lo a seu GOPATH.
@@ -247,4 +256,89 @@ t := transactions.Transaction{
 }
 
 payables, err := t.ListPayables(client)
+```
+
+
+
+
+
+
+## Recebível
+
+Objeto contendo os dados de um recebível. O recebível (payable) é gerado automaticamente após uma transação ser paga. Para cada parcela de uma transação é gerado um recebível, que também pode ser dividido por recebedor (no caso de um split ter sido feito).
+
+### Retornando recebíveis
+
+```php
+<?php
+$payables = $pagarme->payables()->getList();
+```
+
+Se necessário, você pode aplicar filtros na busca dos payables, por exemplo, você pode recuperar todos os payables de uma transação:
+
+```php
+<?php
+$transactionPayables = $pagarme->payables()->getList([
+    'transaction_id' => 'ID_DA_TRANSAÇÃO'
+]);
+```
+
+### Retornando um recebível
+
+```php
+<?php
+$payable = $pagarme->payables()->get([
+    'id' => 'ID_DO_PAYABLE'
+]);
+```
+
+## Endpoints faltando
+
+Alguns endpoints ainda nao foram implementados neste SDK (contribuições são bem-vindas)
+
+É possível usar o metodo **Send** do pacote **client** para fazer requests para os endpoints ainda não implementados.
+
+```go
+package main
+
+import (
+    "net/http"
+    
+    "github.com/isfonzar/pagarme-go/pkg/client"
+)
+
+func main() {
+    client := client.NewClient(http.Client{}, "PAGARME_API_KEY", nil)
+    
+    params := struct{} // Sua struct de request
+    responseObj := struct{} // Struct de resposta
+    
+    req, err := client.NewRequest("METODO_HTTP", "URL_DO_ENDPOINT", params)
+    response := &responseObj{}
+    if err != nil {
+        return response, nil, err
+    }
+    errorResp, err := c.Send(req, response)
+    
+    if err != nil {
+        t.Errorf("Error when sending capture transaction request got: %s", err.Error())
+    }
+}
+```
+
+## Contribuições
+
+### Bug Reports & Feature Requests
+
+Por favor, use o [issue tracker](https://github.com/isfonzar/pagarme-go/issues) para reportar bugs e/ou pedir implementações de features.
+
+### Desenvolvimento
+
+Pull-requests são bem vindos. Para ajudar no desenvolvimento, basta fazer:
+
+```bash
+$ git clone git@github.com:isfonzar/pagarme-go.git
+$ cd pagarme-go/
+$ export PAGARME_API_KEY=ak_test_su4k3yd0p4g4rm3
+$ make tests
 ```

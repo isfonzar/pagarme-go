@@ -1,13 +1,15 @@
-package transactions
+package client
 
 import (
+	"net/http"
+	"os"
 	"testing"
 
-	"github.com/isfonzar/pagarme-go/pkg/client"
+	"github.com/isfonzar/pagarme-go/internal/transactions"
 )
 
-func TestTransaction_Create(t *testing.T) {
-	address := Address{
+func TestPagarmeClient_CreateTransaction(t *testing.T) {
+	address := transactions.Address{
 		Street:        "Avenida Brigadeiro Faria Lima",
 		StreetNumber:  "1811",
 		Neighborhood:  "Jardim Paulistano",
@@ -18,7 +20,7 @@ func TestTransaction_Create(t *testing.T) {
 		Complementary: "Quinto andar",
 	}
 
-	trans := CreateTransaction{
+	params := transactions.CreateTransactionParams{
 		Amount:             100,
 		CardHolderName:     "Morpheus Fishburne",
 		CardExpirationDate: "1220",
@@ -26,16 +28,16 @@ func TestTransaction_Create(t *testing.T) {
 		CardCVV:            "123",
 		PostbackURL:        "http://requestb.in/pkt7pgpk",
 		Installments:       "1",
-		Billing: Billing{
+		Billing: transactions.Billing{
 			Name:    "Morpheus Fishburne",
 			Address: address,
 		},
-		Shipping: Shipping{
+		Shipping: transactions.Shipping{
 			Name:         "Neo Reeves",
 			DeliveryDate: "2000-12-21",
 			Address:      address,
 		},
-		Items: []Item{
+		Items: []transactions.Item{
 			{
 				Id:        "r123",
 				Title:     "Red Pill",
@@ -55,13 +57,13 @@ func TestTransaction_Create(t *testing.T) {
 				Date:      "2000-12-21",
 			},
 		},
-		Customer: Customer{
+		Customer: transactions.Customer{
 			ExternalID: "#3311",
 			Type:       "individual",
 			Name:       "Morpheus Fishburne",
 			Country:    "br",
 			Email:      "mopheus@nabucodonozor.com",
-			Documents: []Document{
+			Documents: []transactions.Document{
 				{
 					Number: "30621143049",
 					Type:   "cpf",
@@ -74,10 +76,37 @@ func TestTransaction_Create(t *testing.T) {
 		},
 	}
 
-	cli := *client.NewClient("api_key", nil)
+	cli := NewClient(http.Client{}, os.Getenv("PAGARME_API_KEY"), nil)
 
-	_, err := trans.Create(cli)
+	_, _, err := cli.CreateTransaction(params)
+
 	if err != nil {
-		t.Errorf("Error when sending request got: %s", err.Error())
+		t.Errorf("Error when sending create transaction request got: %s", err.Error())
+	}
+}
+
+func TestPagarmeClient_CaptureTransaction(t *testing.T) {
+	params := transactions.CaptureTransactionParams{
+		Amount: 100,
+	}
+
+	cli := NewClient(http.Client{}, os.Getenv("PAGARME_API_KEY"), nil)
+
+	_, _, err := cli.CaptureTransaction(12345, params)
+
+	if err != nil {
+		t.Errorf("Error when sending capture transaction request got: %s", err.Error())
+	}
+}
+
+func TestPagarmeClient_RefundTransaction(t *testing.T) {
+	params := transactions.NewRefundTransactionParams()
+
+	cli := NewClient(http.Client{}, os.Getenv("PAGARME_API_KEY"), nil)
+
+	_, _, err := cli.RefundTransaction(12345, params)
+
+	if err != nil {
+		t.Errorf("Error when sending refund transaction request got: %s", err.Error())
 	}
 }
