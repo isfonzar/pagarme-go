@@ -2,83 +2,140 @@ package transactions
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/isfonzar/pagarme-go/pkg/client"
 )
 
-const endPoint = "transactions"
+const captureEndpoint = "transactions/%d/capture"
 
-// Transaction
+// Transaction é o objeto que você recebe como resposta em cada etapa do processo de efetivação da transação
 type Transaction struct {
-	// Obrigatório. Valor a ser cobrado. Deve ser passado em centavos. Ex: R$ 10.00 = 1000. Deve ser no mínimo 1 real (100)
+	// Object Nome do tipo do objeto criado/modificado.
+	Object string `json:"object"`
+	// Representa o estado da transação. A cada atualização no processamento da transação, esta propriedade é alterada
+	// caso você esteja usando uma postback_url, os seus servidores são notificados desses updates.
+	// Valores possíveis: processing, authorized, paid, refunded, waiting_payment, pending_refund, refused .
+	Status string `json:"status"`
+	// Motivo pelo qual a transação foi recusada.
+	// Valores possíveis: acquirer, antifraud, internal_error, no_acquirer, acquirer_timeout
+	RefuseReason string `json:"refuse_reason"`
+	// Agente responsável pela validação ou anulação da transação.
+	// Valores possíveis: acquirer, antifraud, internal_error, no_acquirer, acquirer_timeout
+	StatusReason string `json:"status_reason"`
+	// Adquirente responsável pelo processamento da transação.
+	// Valores possíveis: development (em ambiente de testes), pagarme (adquirente Pagar.me), stone, cielo, rede.
+	AcquirerName string `json:"acquirer_name"`
+	// ID da adquirente responsável pelo processamento da transação.
+	AcquirerID string `json:"acquirer_id"`
+	// Mensagem de resposta da adquirente referente ao status da transação.
+	AcquirerResponseCode string `json:"acquirer_response_code"`
+	// Código de autorização retornado pela bandeira.
+	AuthorizationCode string `json:"authorization_code"`
+	// Texto que irá aparecer na fatura do cliente depois do nome da loja. OBS: Limite de 13 caracteres.
+	SoftDescriptor string `json:"soft_descriptor"`
+	// Código que identifica a transação na adquirente.
+	TID int `json:"tid"`
+	// Código que identifica a transação na adquirente.
+	NSU int `json:"nsu"`
+	// Data de criação da transação no formato ISODate
+	DateCreated string `json:"date_created"`
+	// Data de atualização da transação no formato ISODate
+	DateUpdated string `json:"date_updated"`
+	// Valor, em centavos, da transação.
 	Amount int `json:"amount"`
-	// Informações do cartão do cliente criptografadas em sua aplicação.
-	CardHash string `json:"card_hash"`
-	// Ao realizar uma transação, retornamos o card_id do cartão,
-	// para que nas próximas transações ele possa ser utilizado como forma de identificar os dados de pagamento.
-	CardID string `json:"card_id"`
+	// Valor em centavos autorizado na transação, sempre menor ou igual a amount.
+	AuthorizedAmount int `json:"authorized_amount"`
+	// Valor em centavos capturado na transação, sempre menor ou igual a authorized_amount.
+	PaidAmount int `json:"paid_amount"`
+	// Valor em centavos estornado até o momento na transação, sempre menor ou igual a paidamount
+	RefundedAmount int `json:"refunded_amount"`
+	// Número de parcelas a serem cobradas. OBS: Mínimo 1 e Máximo 12.
+	Installments int `json:"installments"`
+	// Número identificador da transação
+	ID int `json:"id"`
+	// Custo da transação para o lojista, envolvendo processamento e antifraude.
+	Cost int `json:"cost"`
 	// Nome do portador do cartão.
 	CardHolderName string `json:"card_holder_name"`
-	// Data de validade do cartão no formato MMAA.
-	CardExpirationDate string `json:"card_expiration_date"`
-	// Número do cartão.
-	CardNumber string `json:"card_number"`
-	// Código verificador do cartão.
-	CardCVV string `json:"card_cvv"`
-	// Método de pagamento da transação. Aceita dois tipos: credit_card e boleto
-	PaymentMethod string `json:"payment_method"`
-	// Endpoint do seu sistema que receberá informações a cada atualização da transação.
-	// Caso você defina este parâmetro, o processamento da transação se torna assíncrono.
+	// Últimos 4 dígitos do cartão.
+	CardLastDigits string `json:"card_last_digits"`
+	// Primeiros 5 dígitos do cartão
+	CardFirstDigits string `json:"card_first_digits"`
+	// Bandeira do cartão.
+	CardBrand string `json:"card_brand"`
+	// Usado em transações EMV, define se a validação do cartão aconteceu online(com banco emissor), ou offline(através do chip).
+	CardPinMode string `json:"card_pin_mode"`
+	// URL (endpoint) de seu sistema que recebe notificações a cada mudança no status da transação.
 	PostbackURL string `json:"postback_url"`
-	// Utilize false caso queira manter o processamento síncrono de uma transação.
-	Async bool `json:"async"`
-	// Número de parcelas da transação, sendo mínimo: 1 e Máximo: 12. OBS: Se o pagamento for boleto, o padrão é 1
-	Installments string `json:"installments"`
-	// Prazo limite para pagamento do boleto. Deve ser passado no formato yyyy-MM-dd.Default: data atual + 7 dias
+	// Método de pagamento, com os possíveis valores: credit_card e boleto.
+	PaymentMethod string `json:"payment_method"`
+	// Define qual foi a forma de captura dos dados de pagamento. Valores possíveis: magstripe, emv, ecommerce.
+	CaptureMethod string `json:"capture_method"`
+	// Define qual foi a nota de antifraude atribuída a transação. Por padrão, transações com score >= 95 são recusadas.
+	AntifraudScore string `json:"antifraud_score"`
+	// URL do boleto para impressão
+	BoletoURL string `json:"boleto_url"`
+	// Código de barras do boleto gerado na transação
+	BoletoBarcode string `json:"boleto_barcode"`
+	// Data de expiração do boleto (em ISODate)
 	BoletoExpirationDate string `json:"boleto_expiration_date"`
-	// Descrição que aparecerá na fatura depois do nome de sua empresa.
-	// Máximo de 13 caracteres, sendo alfanuméricos e espaços.
-	SoftDescriptor string `json:"soft_descriptor"`
-	// Após a autorização de uma transação, você pode escolher se irá capturar ou adiar a captura do valor.
-	// Caso opte por postergar a captura, atribua o valor false
-	Capture string `json:"capture"`
-	// Campo instruções do boleto. Máximo de 255 caracteres
-	BoletoInstructions string `json:"boleto_instructions"`
-	// Regras de divisão da transação
-	SplitRules []struct {
-		Liable              bool   `json:"liable"`
-		ChargeProcessingFee bool   `json:"charge_processing_fee"`
-		Percentage          string `json:"percentage"`
-		Amount              string `json:"amount"`
-		ChargeRemainderFee  bool   `json:"charge_remainder_fee"`
-		RecipientID         string `json:"recipient_id"`
-	} `json:"split_rules"`
-	// Cliente
+	// Mostra se a transação foi criada utilizando a API Key ou Encryption Key
+	Referer string `json:"referer"`
+	// IP de origem que criou a transação
+	// podendo ser diretamente de seu cliente, caso a requisição venha diretamente do client-side,
+	// ou de seus servidores, caso tudo esteja centralizando em sua aplicação no server-side.
+	IP string `json:"ip"`
+	// Caso essa transação tenha sido originada na cobrança de uma assinatura, o id desta será o valor dessa propriedade.
+	SubscriptionID int `json:"subscription_id"`
+	// Dados do cliente. Obrigatório com o antifraude habilitado. O objeto customer é descrito aqui
 	Customer Customer `json:"customer"`
-	// Obrigatório com o antifraude habilitado. Define os dados de cobrança, como nome e endereço
+	// Dados de cobrança da transação. Obrigatório com o antifraude habilitado. O objeto billing é descrito aqui
 	Billing Billing `json:"billing"`
-	// Define os dados de envio da compra, como nome do recebedor, valor do envio e endereço de recebimento.
-	// Deve ser preenchido no caso da venda de bem físico
+	// Dados de envio do que foi comprado. Deve ser preenchido no caso de venda de bem físico. O objeto shipping é descrito aqui
 	Shipping Shipping `json:"shipping"`
-	// Obrigatório com o antifraude habilitado. Define os dados dos itens vendidos, como nome, preço unitário e quantidade
+	// Dados sobre os produtos comprados. Obrigatório com o antifraude habilitado. O objeto items é descrito aqui
 	Items []Item `json:"items"`
-	// Você pode passar dados adicionais na criação da transação para facilitar uma futura análise de dados.
-	// Ex: metadata[ idProduto ]=13933139
-	Metadata string `json:"metadata"`
-	// Valor único que identifica a sessão do usuário acessando o site. Máximo de 100 caracteres
+	// Dados de endereço, presente em shipping e billing. Obrigatório com o antifraude habilitado. O objeto address é descrito aqui
+	Address Address `json:"address"`
+	// Informações de documentos do comprador. Obrigatório com o antifraude habilitado. O objeto documents é descrito aqui
+	Documents []Document `json:"documents"`
+	// Objeto com dados adicionais informados na criação da transação.
+	Metadata struct{} `json:"metadata"`
+	// Objeto com as regras de split definidas para essa transação.
+	SplitRules []SplitRules `json:"split_rules"`
+	// Objeto com dados usados na integração com antifraude.
+	AntifraudMetadata struct{} `json:"antifraud_metadata"`
+	// Valor único que identifica a sessão do usuário acessando o site
 	Session string `json:"session"`
-	// Data e hora do dispositivo que está efetuando a transação. Deve ser enviado no seguinte formato: yyyy-MM-dd'T'HH:mm:ss'Z
-	// Este campo é necessário para transações de mundo físico (com método de captura EMV e Magstripe)
-	LocalTime string `json:"local_time"`
 }
 
-// Create cria uma transação
-func (t *Transaction) Create(client client.Client) (*http.Response, error) {
-	transactionReq, err := json.Marshal(&t)
+func (t *Transaction) Capture(client client.Client) (*Transaction, error) {
+	req, err := json.Marshal(&t)
 	if err != nil {
 		return nil, err
 	}
 
-	return client.Request(http.MethodPost, endPoint, transactionReq)
+	resp, err := client.Request(http.MethodPost, fmt.Sprintf(captureEndpoint, t.ID), req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	transaction := new(Transaction)
+	err = json.Unmarshal(body, &transaction)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("\n%+v", transaction)
+
+	return transaction, err
 }

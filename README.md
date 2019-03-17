@@ -14,6 +14,7 @@ Você pode acessar a documentação oficial do Pagar.me acessando esse [link](ht
 - [Configuração](#configuração)
 - [Transações](#transações)
   - [Criando uma transação](#criando-uma-transação)
+  - [Capturando uma transação](#capturando-uma-transação)
 
 ## Instalação
 
@@ -77,7 +78,7 @@ import (
 func main () {
     c := *client.NewClient("SUA_CHAVE_DE_API", nil)
     
-    t := transactions.Transaction{
+    t := transactions.CreateTransaction{
         Amount:             100,
         CardHolderName:     "Morpheus Fishburne",
         CardExpirationDate: "1220",
@@ -151,6 +152,27 @@ func main () {
         },
     }
 	
-    resp, err := t.Create(c)
+    transaction, err := t.Create(c)
+}
+```
+
+### Capturando uma transação
+
+```go
+package main
+
+import (
+	"github.com/isfonzar/pagarme-go/pkg/client"
+	"github.com/isfonzar/pagarme-go/pkg/transactions"
+)
+
+func main () {
+    c := *client.NewClient("SUA_CHAVE_DE_API", nil)
+    
+    t := transactions.Transaction{
+        Amount: 100,
+    }
+	
+    transaction, err := t.Capture(c)
 }
 ```
