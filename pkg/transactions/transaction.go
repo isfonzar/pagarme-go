@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	"github.com/isfonzar/pagarme-go/pkg/client"
 )
@@ -200,4 +201,28 @@ func (t *Transaction) GetList(client client.Client) (*TransactionList, error) {
 	}
 
 	return list, err
+}
+
+// Get retorna os dados de uma transação em específico, com as informações em um único objeto.
+func (t *Transaction) Get(client client.Client) (*Transaction, error) {
+	endpoint := transactionsBaseEndpoint + "/" + strconv.Itoa(t.ID)
+
+	resp, err := client.Request(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	transaction := new(Transaction)
+	err = json.Unmarshal(body, &transaction)
+	if err != nil {
+		return nil, err
+	}
+
+	return transaction, err
 }

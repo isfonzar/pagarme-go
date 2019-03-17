@@ -19,6 +19,7 @@ Você pode acessar a documentação oficial do Pagar.me acessando esse [link](ht
     - [Estornando uma transação parcialmente](#estornando-uma-transação-parcialmente)
     - [Estornando uma transação com split](#estornando-uma-transação-com-split)
   - [Retornando transações](#retornando-transações)
+  - [Retornando uma transação](#retornando-uma-transação)
 
 ## Instalação
 
@@ -224,4 +225,13 @@ transaction, err := t.Refund(client)
 t := transactions.Transaction{}
 
 transaction, err := t.GetList(client)
+```
+
+### Retornando uma transação
+
+```php
+<?php
+$transactions = $pagarme->transactions()->get([
+    'id' => 'ID_DA_TRANSAÇÃO' 
+]);
 ```
