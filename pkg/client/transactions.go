@@ -2,9 +2,10 @@ package client
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/isfonzar/pagarme-go/internal/payables"
 	"github.com/isfonzar/pagarme-go/internal/transactions"
-	"net/http"
 )
 
 func (c *PagarmeClient) CreateTransaction(params transactions.CreateTransactionParams) (*transactions.Transaction, *ErrorResponse, error) {

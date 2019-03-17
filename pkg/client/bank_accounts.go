@@ -2,6 +2,8 @@ package client
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/isfonzar/pagarme-go/internal/bank_accounts"
 )
 
