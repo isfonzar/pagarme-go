@@ -15,6 +15,9 @@ Você pode acessar a documentação oficial do Pagar.me acessando esse [link](ht
 - [Transações](#transações)
   - [Criando uma transação](#criando-uma-transação)
   - [Capturando uma transação](#capturando-uma-transação)
+  - [Estornando uma transação](#estornando-uma-transação)
+    - [Estornando uma transação parcialmente](#estornando-uma-transação-parcialmente)
+    - [Estornando uma transação com split](#estornando-uma-transação-com-split)
 
 ## Instalação
 
@@ -170,9 +173,84 @@ func main () {
     c := *client.NewClient("SUA_CHAVE_DE_API", nil)
     
     t := transactions.Transaction{
+    	ID: 123456,
         Amount: 100,
     }
 	
     transaction, err := t.Capture(c)
+}
+```
+
+### Estornando uma transação
+
+```go
+package main
+
+import (
+	"github.com/isfonzar/pagarme-go/pkg/client"
+	"github.com/isfonzar/pagarme-go/pkg/transactions"
+)
+
+func main () {
+    c := *client.NewClient("SUA_CHAVE_DE_API", nil)
+    
+    t := transactions.Transaction{
+        ID: 123456,
+    }
+	
+    transaction, err := t.Refund(c)
+}
+```
+
+Esta funcionalidade também funciona com estornos parciais, ou estornos com split. Por exemplo:
+
+#### Estornando uma transação parcialmente
+
+```go
+package main
+
+import (
+	"github.com/isfonzar/pagarme-go/pkg/client"
+	"github.com/isfonzar/pagarme-go/pkg/transactions"
+)
+
+func main () {
+    c := *client.NewClient("SUA_CHAVE_DE_API", nil)
+    
+    t := transactions.Transaction{
+        ID: 123456,
+        Amount: 1000, // Valor parcial do estorno
+    }
+	
+    transaction, err := t.Refund(c)
+}
+```
+
+#### Estornando uma transação com split
+
+```go
+package main
+
+import (
+	"github.com/isfonzar/pagarme-go/pkg/client"
+	"github.com/isfonzar/pagarme-go/pkg/transactions"
+)
+
+func main () {
+    c := *client.NewClient("SUA_CHAVE_DE_API", nil)
+    
+    t := transactions.Transaction{
+        ID: 123456,
+        Amount: 1000, // Valor parcial do estorno
+        RefundSplitRules: []transactions.RefundSplitRules{
+            {
+                ID: "sr_cj41w9m4d01ta316d02edaqav",
+                Amount: 3000,
+                RecipientID: "re_cj2wd5ul500d4946do7qtjrvk",
+            },
+        },
+    }
+	
+    transaction, err := t.Refund(c)
 }
 ```

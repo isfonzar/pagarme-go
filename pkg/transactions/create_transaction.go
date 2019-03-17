@@ -47,7 +47,7 @@ type CreateTransaction struct {
 	// Campo instruções do boleto. Máximo de 255 caracteres
 	BoletoInstructions string `json:"boleto_instructions"`
 	// Regras de divisão da transação
-	SplitRules []SplitRules `json:"split_rules"`
+	SplitRules []TransactionSplitRules `json:"split_rules"`
 	// Cliente
 	Customer Customer `json:"customer"`
 	// Obrigatório com o antifraude habilitado. Define os dados de cobrança, como nome e endereço

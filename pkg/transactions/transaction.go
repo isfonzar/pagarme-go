@@ -10,6 +10,7 @@ import (
 )
 
 const captureEndpoint = "transactions/%d/capture"
+const refundEndpoint = "transactions/%d/refund"
 
 // Transaction é o objeto que você recebe como resposta em cada etapa do processo de efetivação da transação
 type Transaction struct {
@@ -105,11 +106,13 @@ type Transaction struct {
 	// Objeto com dados adicionais informados na criação da transação.
 	Metadata struct{} `json:"metadata"`
 	// Objeto com as regras de split definidas para essa transação.
-	SplitRules []SplitRules `json:"split_rules"`
+	SplitRules []TransactionSplitRules `json:"split_rules,omitempty"`
 	// Objeto com dados usados na integração com antifraude.
 	AntifraudMetadata struct{} `json:"antifraud_metadata"`
 	// Valor único que identifica a sessão do usuário acessando o site
 	Session string `json:"session"`
+	// Define as regras de split para o estorno.
+	RefundSplitRules []RefundSplitRules `json:"split_rules,omitempty"`
 }
 
 func (t *Transaction) Capture(client client.Client) (*Transaction, error) {
@@ -135,7 +138,36 @@ func (t *Transaction) Capture(client client.Client) (*Transaction, error) {
 		return nil, err
 	}
 
-	fmt.Printf("\n%+v", transaction)
+	return transaction, err
+}
+
+// Refund estorna uma transação
+// Em caso de estorno de uma transação realizada com Cartão de crédito, apenas o ID da transação é necessário
+// Caso a compra tenha sido feita por boleto bancário, você precisa informar os dados da conta bancária que irá receber
+// o valor estornado ou o ID desta conta.
+// @todo implement refund passing bank account
+func (t *Transaction) Refund(client client.Client) (*Transaction, error) {
+	req, err := json.Marshal(&t)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Request(http.MethodPost, fmt.Sprintf(refundEndpoint, t.ID), req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	transaction := new(Transaction)
+	err = json.Unmarshal(body, &transaction)
+	if err != nil {
+		return nil, err
+	}
 
 	return transaction, err
 }
