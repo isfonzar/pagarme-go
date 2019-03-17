@@ -1,8 +1,8 @@
 <p align="center">
-    <img width="120" src="https://d32exi8v9av3ux.cloudfront.net/blog/gopher.jpg">
+    <img width="120" src="http://www.gophergala.com/assets/img/fancy_gopher_renee.jpg">
 </p>
 
-# Pagarme-go ![Language Badge](https://img.shields.io/badge/Language-Go-blue.svg) ![Go Report](https://goreportcard.com/badge/github.com/isfonzar/pagarme-go) ![License Badge](https://img.shields.io/badge/License-MIT-blue.svg) ![Status Badge](https://img.shields.io/badge/Status-Beta-brightgreen.svg)
+# Pagarme-go ![Language Badge](https://img.shields.io/badge/Language-Go-blue.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/isfonzar/pagarme-go)](https://goreportcard.com/report/github.com/isfonzar/pagarme-go) ![License Badge](https://img.shields.io/badge/License-MIT-blue.svg) ![Status Badge](https://img.shields.io/badge/Status-Beta-brightgreen.svg)
 
 Implementação não-oficial da API do pagarme para Go.
 
