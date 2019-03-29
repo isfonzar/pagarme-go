@@ -4,7 +4,7 @@
 
 # Pagarme-go ![Language Badge](https://img.shields.io/badge/Language-Go-blue.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/isfonzar/pagarme-go)](https://goreportcard.com/report/github.com/isfonzar/pagarme-go) ![License Badge](https://img.shields.io/badge/License-MIT-blue.svg) ![Status Badge](https://img.shields.io/badge/Status-Beta-brightgreen.svg)
 
-Implementação não-oficial da API do Pagar.me para Go.
+pagarme-go é um SDK para a API do [Pagar.me](https://pagar.me) escrito em Go.
 
 Você pode acessar a documentação oficial do Pagar.me acessando esse [link](https://docs.pagar.me).
 
@@ -12,8 +12,11 @@ Você pode acessar a documentação oficial do Pagar.me acessando esse [link](ht
 
 - [Instalação](#instalação)
 - [Configuração](#configuração)
+  - [Definindo headers customizados](#definindo-headers-customizados)
 - [Endpoints faltando](#endpoints-faltando)
 - [Contribuições](#contribuições)
+  - [Bug Reports & Feature Requests](#bug-reports--feature-requests)
+  - [Desenvolvimento](#desenvolvimento)
 
 ## Instalação
 
